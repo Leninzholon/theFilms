@@ -15,7 +15,7 @@ class DetaillController: UIViewController {
     var filmInfo : MainViewModel? {
         didSet {
             titleLabel.text = filmInfo?.title
-            descriptionText.text = filmInfo?.description
+            descriptionText.text = filmInfo?.overview
             guard let stringURL = filmInfo?.urlString else { return }
             guard let url = URL(string: Constants.shared.forLoadImageURL + stringURL ) else { return }
             filmImage.sd_setImage(with: url)

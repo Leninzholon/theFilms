@@ -8,18 +8,18 @@
 import UIKit
 
 import UIKit
-import Kingfisher
 
 
 
 struct NetworkWeatherManager {
     static let shared = NetworkWeatherManager()
-    func fetchCurrent(baseUrl: String, complition: @escaping ([Result]) -> ()) {
+    func fetchCurrent( baseUrl: String, complition: @escaping ([Result]) -> ()) {
         let urlString =  "https://api.themoviedb.org/3/movie/upcoming?api_key=8983d582e6db4d50746d8e03ec9e79f5"
         guard let url = URL(string: urlString) else { return }
         let session = URLSession(configuration: .default)
         let task = session.dataTask(with: url) { data, response, error in
             if let error = error {
+                complition([])
                 print(error.localizedDescription)
             } else {
                 let decoder = JSONDecoder()
@@ -32,6 +32,7 @@ struct NetworkWeatherManager {
                     }
                 } catch let error as NSError {
                     print(error.localizedDescription)
+                    complition([])
                 }
             
             }

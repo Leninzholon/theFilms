@@ -42,10 +42,7 @@ class TabController: UITabBarController, UITabBarControllerDelegate {
     }
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         if viewController == self.viewControllers?[0] {
-              print("First tab")
-            
             NotificationCenter.default.post(name: .internetDown, object: nil, userInfo: nil)
-
           }
 
 }

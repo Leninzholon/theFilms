@@ -9,56 +9,63 @@ import UIKit
 
 class FavoriteFilmsController: UITableViewController {
     //MARK: - Properties
-    var favoriteFilms = [MainFilmModel]()
+    var viewModel = FavoriteFilmsViewModel([])
     //MARK: - livecycle
- 
+    
+    
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.register(FavoriteFilmCell.self, forCellReuseIdentifier: FavoriteFilmCell.indetifier)
         getFavoriteFilms()
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: .internetDown, object: nil)
-        title = "Favorite film"
+        setupNotification()
+        setupInterfiseNavigationBar()
     }
     deinit {
          NotificationCenter.default.removeObserver(self)
      }
+    //MARK: - selector func
     @objc func keyboardWillShow(){
         getFavoriteFilms()
        }
     //MARK: -  helper func
+    fileprivate func setupInterfiseNavigationBar() {
+        title = "Favorite film"
+    }
+    fileprivate func setupNotification() {
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: .internetDown, object: nil)
+        
+    }
     fileprivate func getFavoriteFilms() {
         NetworkWeatherManager.shared.fetchCurrent(baseUrl: Constants.shared.upcomingURL) { films in
-            StorageManager.shared.saveAll(films: films)
-            let favoriteFilmsLoad = StorageManager.shared.load()
-            self.favoriteFilms = favoriteFilmsLoad.filter { $0.isLike == true }
-            self.tableView.reloadData()
+            let favoriteFilmsLoad = CoreDataManager.shared.fetchFilm()
+            self.viewModel = FavoriteFilmsViewModel(favoriteFilmsLoad.filter { $0.isLike == true })
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
         }
     }
-    
 }
-
 extension FavoriteFilmsController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return favoriteFilms.count
+        return viewModel.numberOfRowsInSection()
     }
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: FavoriteFilmCell.indetifier, for: indexPath) as? FavoriteFilmCell else { return UITableViewCell() }
         cell.delegate = self
         cell.selectionStyle = .none
-        let film = favoriteFilms[indexPath.row]
-        cell.film = film
+        let film = viewModel.favoritFilmAtIndex(index: indexPath.row)
+        cell.viewModel = film
         return cell
     }
-    
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 200
+        return FavoriteFilmCell.height
     }
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         print("ok")
     }
 }
-
 //MARK: - extension to FavoriteFilmCellProtocol
 
 extension FavoriteFilmsController: FavoriteFilmCellProtocol {

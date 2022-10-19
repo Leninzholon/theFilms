@@ -17,7 +17,7 @@ struct MainFilmModel: Codable {
             }
         }
     }
-    let description: String
+    let overview: String
     let urlString: String
     var isLike: Bool = false {
         didSet {
@@ -28,7 +28,7 @@ struct MainFilmModel: Codable {
     init(model: Result) {
         id = model.id
         title = model.title
-        description = model.overview
+        overview = model.overview
         urlString = model.posterPath
         isVideo = model.video
     }

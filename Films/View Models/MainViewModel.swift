@@ -8,12 +8,12 @@
 import UIKit
 
 struct MainListViewModel {
-   private var films : [MainFilmModel]
+   private var films : [Film]
 }
 
 
 extension MainListViewModel {
-    init(_ films: [MainFilmModel]) {
+    init(_ films: [Film]) {
         self.films = films
     }
 }
@@ -29,30 +29,46 @@ extension MainListViewModel {
 }
 
 struct MainViewModel {
-     private var film: MainFilmModel
+     private var film: Film
 }
 
+extension MainListViewModel {
+    func setValueForViewModel(complition: @escaping (MainListViewModel) -> ()) {
+        NetworkWeatherManager.shared.fetchCurrent(baseUrl: Constants.shared.upcomingURL) { films in
+            if self.films.count > 0 {
+                CoreDataManager.shared.saveFilms(resultFilm: films)
+
+            }
+            let currentFilms = CoreDataManager.shared.fetchFilm()
+            let viewModel = MainListViewModel(currentFilms)
+            complition(viewModel)
+
+        }
+
+
+    }
+}
 extension MainViewModel {
-    init(_ film: MainFilmModel) {
+    init(_ film: Film) {
         self.film = film
     }
 }
 
 extension MainViewModel {
     var title : String {
-        return self.film.title
+        return self.film.title ?? ""
     }
-    var description : String {
-        return self.film.description
+    var overview : String {
+        return self.film.overview ?? ""
     }
     var urlString: String {
-        return film.urlString
+        return film.urlString ?? ""
     }
     var islake: Bool {
         return film.isLike
     }
     var id: Int {
-        return film.id
+        return Int(film.id)
     }
     
     mutating func changeIsLike() {

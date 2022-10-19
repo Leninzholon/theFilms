@@ -15,13 +15,14 @@ protocol FavoriteFilmCellProtocol: AnyObject {
 }
 class FavoriteFilmCell: UITableViewCell, UITextViewDelegate  {
     //MARK: - Properties
+    static let height: CGFloat = 200
     weak var delegate: FavoriteFilmCellProtocol?
     static let indetifier = "FavoriteFilmCell"
-    var film: MainFilmModel? {
+    var viewModel: FavoriteFilmViewModel? {
         didSet {
-            titleLabel.text = film?.title
-            descriptionLabel.text = film?.description
-            guard let stringUrl = film?.urlString else { return }
+            titleLabel.text = viewModel?.title
+            descriptionLabel.text = viewModel?.overview
+            guard let stringUrl = viewModel?.urlString else { return }
             guard let url = URL(string: Constants.shared.forLoadImageURL + stringUrl) else { return }
             filmImage.sd_setImage(with: url)
         }
@@ -56,12 +57,10 @@ class FavoriteFilmCell: UITableViewCell, UITextViewDelegate  {
     //MARK: - helpers func
     @objc  func handleDelete() {
         print("DEBAG: trash..")
-        guard var film = film else {
-            return
-        }
+       
 
-        film.isLike = !film.isLike
-        StorageManager.shared.setFavoriteStatus(for: film.title, with: film.isLike)
+        viewModel?.changeIsLike()
+//        StorageManager.shared.setFavoriteStatus(for: viewModel?.title!, with: viewModel.isLike)
         delegate?.removeFilm()
     }
     

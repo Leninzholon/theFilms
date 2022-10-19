@@ -8,22 +8,30 @@
 import UIKit
 
 class MainViewController: UICollectionViewController {
+    //MARK: - Properties
     private var viewModel: MainListViewModel?
+    //MARK: - live cycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .gray
-        collectionView.dataSource = self
-        collectionView.delegate = self
-        collectionView.register(FilmViewCell.self, forCellWithReuseIdentifier: FilmViewCell.identifier)
+        setupSettingCollectionView()
         NetworkWeatherManager.shared.fetchCurrent(baseUrl: Constants.shared.upcomingURL) { films in
-            StorageManager.shared.saveAll(films: films)
-            let currentFilms = StorageManager.shared.load()
-            self.viewModel = MainListViewModel(currentFilms)
+            if !films.isEmpty { CoreDataManager.shared.saveFilms(resultFilm: films) }
+            self.viewModel = MainListViewModel(CoreDataManager.shared.fetchFilm())
             DispatchQueue.main.async {
                 self.collectionView.reloadData()
             }
         }
+        setInterfaseNavigationBar()
+    }
+    
+    //MARK: - helper func
+    fileprivate func setInterfaseNavigationBar() {
         title = "Popular film"
+    }
+    fileprivate func setupSettingCollectionView() {
+        collectionView.dataSource = self
+        collectionView.delegate = self
+        collectionView.register(FilmViewCell.self, forCellWithReuseIdentifier: FilmViewCell.identifier)
     }
 }
 extension MainViewController: UICollectionViewDelegateFlowLayout {
@@ -59,12 +67,15 @@ extension MainViewController: FilmViewCellProtocol {
         NotificationCenter.default.post(name: .internetDown, object: nil, userInfo: nil)
         NetworkWeatherManager.shared.fetchCurrent(baseUrl: Constants.shared.upcomingURL) { films in
             StorageManager.shared.saveAll(films: films)
-            let currentFilms = StorageManager.shared.load()
+            let currentFilms = CoreDataManager.shared.fetchFilm()
             self.viewModel = MainListViewModel(currentFilms)
-            self.collectionView.reloadData()
+            DispatchQueue.main.async {
+                self.collectionView.reloadData()
+            }
         }
-        collectionView.reloadData()
-    }
+        DispatchQueue.main.async {
+            self.collectionView.reloadData()
+        }    }
     
   
     
